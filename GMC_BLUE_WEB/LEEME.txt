@@ -1,0 +1,18 @@
+GMC BLUE — SITIO WEB
+
+CONTENIDO
+- index.html: página principal
+- styles.css: estilos y diseño adaptable
+- script.js: menú, cotizador y enlaces de WhatsApp
+- assets/: las 15 imágenes originales entregadas por el usuario
+
+CÓMO ABRIR
+1. Extrae GMC_BLUE_WEB.zip.
+2. Abre la carpeta GMC_BLUE_WEB en Visual Studio Code.
+3. Abre index.html en tu navegador (o usa la extensión Live Server).
+
+IMPORTANTE
+- La web utiliza exclusivamente las 15 imágenes del ZIP recibido.
+- Los precios de catálogo son referencias públicas de mercado en Perú y NO son precios confirmados de GMC BLUE. Confirma y actualiza los importes antes de publicar.
+- El botón de WhatsApp abre WhatsApp con un mensaje preparado y permite elegir el destinatario. No se configuró un número porque no fue proporcionado.
+- Los enlaces a Google Fonts y Font Awesome requieren conexión a internet.
