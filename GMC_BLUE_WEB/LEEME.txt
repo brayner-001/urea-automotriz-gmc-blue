@@ -1,18 +1,48 @@
-GMC BLUE — SITIO WEB
+GMC BLUE - SITIO WEB CON DISEÑO MEJORADO
+========================================
 
-CONTENIDO
-- index.html: página principal
-- styles.css: estilos y diseño adaptable
-- script.js: menú, cotizador y enlaces de WhatsApp
-- assets/: las 15 imágenes originales entregadas por el usuario
+ARCHIVOS PRINCIPALES
+- index.html: estructura de la página.
+- styles.css: diseño, animaciones y adaptación a móviles.
+- script.js: menú, cotizador, WhatsApp, correo y animaciones de entrada.
+- assets/: fotografías y logotipo de GMC BLUE.
+- assets/videos/: los 4 videos originales.
+- assets/video-posters/: portadas extraídas de los videos.
+
+PERSONALIZACIONES CONSERVADAS DEL ZIP INICIAL
+- Favicon propio de GMC BLUE.
+- Número de WhatsApp configurado en el script original.
+- Enlace de correo electrónico y formulario preparado para Gmail.
+- Enlace de ubicación de Google Maps.
+- Marcadores/comentarios presentes en el HTML original.
+
+MEJORAS REALIZADAS
+- Hero inicial con entrada animada de textos, movimiento sutil de fondo, anillos de luz y efectos de interacción.
+- Animaciones progresivas al desplazarse por la página.
+- Sección de videos rediseñada: video horizontal principal y tres videos verticales en tarjetas compactas con texto útil.
+- Reproducción exclusiva: al iniciar un video, los demás se pausan.
+- Diseño adaptable a escritorio, tablet y celular.
+- Respeto por la preferencia de movimiento reducido del sistema.
 
 CÓMO ABRIR
-1. Extrae GMC_BLUE_WEB.zip.
-2. Abre la carpeta GMC_BLUE_WEB en Visual Studio Code.
-3. Abre index.html en tu navegador (o usa la extensión Live Server).
+1. Descomprime GMC_BLUE_WEB_DISENO_MEJORADO.zip.
+2. Abre la carpeta en Visual Studio Code.
+3. Abre index.html con Live Server.
+4. No separes index.html, styles.css, script.js ni la carpeta assets.
 
 IMPORTANTE
-- La web utiliza exclusivamente las 15 imágenes del ZIP recibido.
-- Los precios de catálogo son referencias públicas de mercado en Perú y NO son precios confirmados de GMC BLUE. Confirma y actualiza los importes antes de publicar.
-- El botón de WhatsApp abre WhatsApp con un mensaje preparado y permite elegir el destinatario. No se configuró un número porque no fue proporcionado.
-- Los enlaces a Google Fonts y Font Awesome requieren conexión a internet.
+- Se conservaron las imágenes y los 4 videos enviados.
+- Verifica que el número de WhatsApp configurado en script.js sea el número comercial correcto antes de publicar.
+- Los precios del cotizador son referenciales y deben confirmarse antes de publicarse como precios oficiales.
+- Verifica titular, alcance y vigencia de las insignias antes de anunciarlas como certificaciones propias.
+- Google Fonts y Font Awesome requieren conexión a internet.
+
+
+MEJORAS DE INTERACCIÓN AÑADIDAS
+- Las fotografías del contenido se pueden abrir en un visor ampliado al hacer clic.
+- El visor permite cerrar con ESC, navegar con las flechas del teclado y usar controles en móvil.
+- El título principal tiene un brillo animado sutil y las leyendas de las fotografías reaccionan al pasar el cursor.
+- Botones, enlaces y tarjetas tienen efectos hover y respuesta al hacer clic.
+- El cursor de escritorio utiliza la nueva flecha azul y verde proporcionada. En botones, enlaces y elementos interactivos se utiliza la nueva mano azul, blanca y verde proporcionada. Ambos cursores se optimizaron a 128 × 128 px para compatibilidad con navegadores.
+
+Los cursores personalizados se encuentran en la carpeta assets: cursor.png (flecha) y gmc_cursor_hand.png (mano).

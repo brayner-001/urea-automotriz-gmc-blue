@@ -65,3 +65,157 @@ document.getElementById('contactEmail')?.addEventListener('click', function(e) {
 });
 
 
+
+
+// Pausa los demás videos cuando comienza una reproducción.
+document.querySelectorAll('.video-grid video, .video-featured video').forEach(video => {
+  video.addEventListener('play', () => {
+    document.querySelectorAll('.video-grid video, .video-featured video').forEach(other => {
+      if (other !== video && !other.paused) other.pause();
+    });
+  });
+});
+
+// Animaciones de entrada al desplazarse: si no hay soporte, el contenido sigue visible.
+document.documentElement.classList.add('has-js-motion');
+const revealItems = document.querySelectorAll(
+  '.intro-grid, .stat, .product-card, .feature-split, .logistics-card, .equipment-grid figure, .recognition, .video-card, .gallery-grid figure, .quote-panel, .leader-photo, .leader-copy, .contact-card'
+);
+revealItems.forEach((item, index) => {
+  item.classList.add('js-reveal');
+  if (item.classList.contains('product-card') || item.classList.contains('video-card')) {
+    item.style.setProperty('--reveal-delay', `${(index % 4) * 75}ms`);
+  }
+});
+
+if ('IntersectionObserver' in window) {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -35px 0px' });
+
+  document.querySelectorAll('.js-reveal').forEach(item => revealObserver.observe(item));
+} else {
+  document.querySelectorAll('.js-reveal').forEach(item => item.classList.add('is-visible'));
+}
+
+
+/* =========================================================
+   GMC BLUE · VISOR DE FOTOGRAFÍAS (LIGHTBOX)
+   Abre las imágenes en tamaño ampliado, con teclado y móvil.
+   ========================================================= */
+(() => {
+  const images = [...document.querySelectorAll(
+    'main img:not(.brand img):not(.footer-brand img)'
+  )].filter(img => !img.closest('.brand, .footer-brand'));
+
+  if (!images.length) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'gmc-lightbox';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Visor de fotografías');
+  overlay.innerHTML = `
+    <button class="lightbox-close" type="button" aria-label="Cerrar imagen"><i class="fa-solid fa-xmark"></i></button>
+    <button class="lightbox-prev" type="button" aria-label="Imagen anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <figure class="lightbox-figure">
+      <img class="lightbox-image" alt="">
+      <figcaption class="lightbox-caption"></figcaption>
+    </figure>
+    <button class="lightbox-next" type="button" aria-label="Imagen siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    <div class="lightbox-counter" aria-live="polite"></div>
+    <p class="lightbox-hint">Usa ← → para navegar · ESC para cerrar</p>
+  `;
+  document.body.appendChild(overlay);
+
+  const largeImage = overlay.querySelector('.lightbox-image');
+  const caption = overlay.querySelector('.lightbox-caption');
+  const counter = overlay.querySelector('.lightbox-counter');
+  const closeButton = overlay.querySelector('.lightbox-close');
+  let activeIndex = 0;
+  let previousFocus = null;
+
+  function showImage(index) {
+    activeIndex = (index + images.length) % images.length;
+    const source = images[activeIndex];
+    largeImage.src = source.currentSrc || source.src;
+    largeImage.alt = source.alt || 'Fotografía GMC BLUE';
+    caption.textContent = source.alt || '';
+    counter.textContent = `${activeIndex + 1} / ${images.length}`;
+  }
+
+  function openImage(index) {
+    previousFocus = document.activeElement;
+    showImage(index);
+    overlay.classList.add('is-open');
+    document.body.classList.add('lightbox-open');
+    closeButton.focus();
+  }
+
+  function closeImage() {
+    overlay.classList.remove('is-open');
+    document.body.classList.remove('lightbox-open');
+    largeImage.removeAttribute('src');
+    if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+  }
+
+  images.forEach((img, index) => {
+    img.classList.add('gmc-zoomable');
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-label', `Ampliar imagen: ${img.alt || 'fotografía GMC BLUE'}`);
+    img.addEventListener('click', () => openImage(index));
+    img.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openImage(index);
+      }
+    });
+  });
+
+  closeButton.addEventListener('click', closeImage);
+  overlay.querySelector('.lightbox-prev').addEventListener('click', () => showImage(activeIndex - 1));
+  overlay.querySelector('.lightbox-next').addEventListener('click', () => showImage(activeIndex + 1));
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) closeImage();
+  });
+  document.addEventListener('keydown', event => {
+    if (!overlay.classList.contains('is-open')) return;
+    if (event.key === 'Escape') closeImage();
+    if (event.key === 'ArrowRight') showImage(activeIndex + 1);
+    if (event.key === 'ArrowLeft') showImage(activeIndex - 1);
+  });
+})();
+
+// Respeta la preferencia del visitante por reducir animaciones.
+
+
+/* Refuerzo de apertura para la galería: permite abrir la foto al pulsar cualquier
+   zona de la tarjeta, no solamente el área exacta del elemento img. */
+(() => {
+  const gallery = document.querySelector('.gallery-grid');
+  if (!gallery) return;
+  gallery.querySelectorAll('figure').forEach(figure => {
+    figure.setAttribute('tabindex', '0');
+    figure.setAttribute('role', 'button');
+    figure.setAttribute('aria-label', 'Ampliar fotografía');
+    figure.addEventListener('click', event => {
+      // El clic en la imagen ya lo gestiona el visor principal.
+      // Si el clic cae en otra parte de la tarjeta, se activa la imagen asociada.
+      if (event.target.closest('img')) return;
+      const image = figure.querySelector('img');
+      image?.click();
+    });
+    figure.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        figure.querySelector('img')?.click();
+      }
+    });
+  });
+})();
