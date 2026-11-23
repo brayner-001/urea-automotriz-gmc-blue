@@ -600,3 +600,116 @@ body.lightbox-open { overflow: hidden; }
     cursor: url("assets/gmc_cursor_hand.png") 12 5, pointer !important;
   }
 }
+
+
+/* =========================================================
+   GMC BLUE · CARRITO, SONIDO Y RESPONSIVE REFORZADO
+   ========================================================= */
+.header-tools{display:flex;align-items:center;gap:12px}
+.cart-trigger{
+  position:relative;display:inline-flex;align-items:center;gap:9px;
+  border:1px solid rgba(57,196,232,.3);border-radius:999px;
+  padding:10px 15px;background:rgba(10,38,57,.85);color:#edf8fc;
+  font:700 11px var(--font);letter-spacing:.2px;transition:.25s ease
+}
+.cart-trigger:hover{border-color:var(--cyan);background:rgba(20,115,157,.28);transform:translateY(-2px)}
+.cart-trigger>i{color:var(--cyan);font-size:14px}
+.cart-trigger b{
+  display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;
+  border-radius:50px;background:var(--green);color:#071522;font-size:10px
+}
+.cart-backdrop{
+  position:fixed;inset:0;z-index:10010;background:rgba(0,7,13,.7);
+  opacity:0;transition:opacity .3s ease
+}
+.cart-backdrop:not([hidden]){display:block;opacity:1}
+.cart-drawer{
+  position:fixed;z-index:10011;top:0;right:0;width:min(470px,100%);
+  height:100dvh;display:flex;flex-direction:column;
+  background:#091c2a;border-left:1px solid rgba(57,196,232,.2);
+  box-shadow:-25px 0 80px rgba(0,0,0,.4);
+  transform:translateX(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
+  color:#f3f8fb
+}
+.cart-drawer.is-open{transform:translateX(0)}
+body.cart-open{overflow:hidden}
+.cart-head{display:flex;align-items:center;justify-content:space-between;padding:26px 25px 20px;border-bottom:1px solid rgba(255,255,255,.09)}
+.cart-eyebrow{font-size:9px;letter-spacing:1.8px;font-weight:800;color:var(--cyan)}
+.cart-head h2{font:800 25px var(--display);margin:5px 0 0}
+.cart-close{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:#102b3d;color:#fff;font-size:17px}
+.cart-items{padding:8px 24px;overflow:auto;flex:1}
+.cart-empty{min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:#9eb4c2}
+.cart-empty i{font-size:32px;color:var(--cyan)}
+.cart-empty b{font-size:15px;color:#f3f8fb}
+.cart-empty span{font-size:12px;max-width:240px;line-height:1.6}
+.cart-item{display:grid;grid-template-columns:76px minmax(0,1fr);gap:13px;padding:17px 0;border-bottom:1px solid rgba(255,255,255,.09)}
+.cart-item>img{width:76px;height:76px;object-fit:cover;border-radius:10px;background:#102b3d}
+.cart-item-main{min-width:0}
+.cart-item-main>b{display:block;font-size:12px;line-height:1.4;color:#f4f9fc}
+.cart-item-price{display:block;margin-top:4px;color:#8faaba;font-size:10px}
+.cart-item-controls{display:flex;align-items:center;justify-content:space-between;margin-top:11px}
+.cart-qty{display:flex;align-items:center;gap:12px}
+.cart-qty button{width:27px;height:27px;border:1px solid rgba(57,196,232,.28);border-radius:7px;background:#102f43;color:#e9faff;font-size:17px}
+.cart-qty span{font-size:11px;font-weight:800;min-width:12px;text-align:center}
+.cart-remove{border:0;background:transparent;color:#f18c8c;font-size:10px;padding:5px}
+.cart-line-total{grid-column:2;color:var(--cyan);font-size:11px;margin-top:-9px}
+.cart-footer{padding:19px 24px calc(20px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.1);background:#071622}
+.cart-total{display:flex;align-items:center;justify-content:space-between}
+.cart-total span{font-size:11px;color:#9fb5c2}
+.cart-total strong{font:800 20px var(--display);color:#fff}
+.cart-footer p{font-size:10px;line-height:1.6;color:#819baa;margin:9px 0 15px}
+.cart-checkout{width:100%;justify-content:center}
+.cart-clear{display:block;margin:12px auto 0;border:0;background:transparent;color:#9ab1bf;font-size:10px;text-decoration:underline}
+.sound-toggle{
+  position:fixed;z-index:9000;left:22px;bottom:22px;display:flex;align-items:center;gap:9px;
+  padding:11px 14px;border-radius:999px;border:1px solid rgba(57,196,232,.28);
+  background:rgba(5,22,34,.92);backdrop-filter:blur(12px);color:#dff7ff;
+  box-shadow:0 8px 28px rgba(0,0,0,.25);font:700 10px var(--font)
+}
+.sound-toggle i{color:var(--cyan);font-size:13px}
+.sound-toggle[aria-pressed="true"]{border-color:rgba(104,220,142,.55)}
+.sound-toggle[aria-pressed="true"] i{color:#72df9c}
+.product-button{display:flex;align-items:center;justify-content:center;gap:9px}
+.product-button:focus-visible,.cart-trigger:focus-visible,.sound-toggle:focus-visible,
+.cart-drawer button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.gmc-lightbox .lightbox-image{cursor:zoom-out}
+.gmc-lightbox .lightbox-figure{cursor:zoom-out}
+.gmc-lightbox .lightbox-prev,.gmc-lightbox .lightbox-next,.gmc-lightbox .lightbox-close{z-index:2}
+.gmc-lightbox .lightbox-hint{pointer-events:none}
+@media(max-width:980px){
+  .header-tools{gap:8px}
+  .cart-trigger{padding:9px 11px}
+}
+@media(max-width:760px){
+  .site-header{gap:10px}
+  .header-tools{margin-left:auto}
+  .cart-trigger span{display:none}
+  .cart-trigger{width:42px;height:42px;justify-content:center;padding:0}
+  .cart-trigger b{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;font-size:9px}
+  .cart-drawer{width:min(440px,100%)}
+  .cart-head{padding:20px 18px 16px}
+  .cart-items{padding:6px 18px}
+  .cart-footer{padding:16px 18px calc(16px + env(safe-area-inset-bottom))}
+  .sound-toggle{left:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:10px 12px}
+  .floating-whatsapp{bottom:calc(16px + env(safe-area-inset-bottom));right:14px}
+  .gmc-lightbox{padding:64px 8px calc(76px + env(safe-area-inset-bottom))}
+  .lightbox-image{max-height:calc(100dvh - 170px);max-width:100vw;border-radius:5px}
+  .lightbox-prev,.lightbox-next{top:auto;bottom:22px;width:42px;height:42px}
+  .lightbox-prev{left:calc(50% - 52px)}
+  .lightbox-next{right:calc(50% - 52px)}
+  .lightbox-close{top:12px;right:12px}
+  .lightbox-counter{bottom:35px}
+  .lightbox-hint{display:none}
+}
+@media(max-width:420px){
+  .cart-item{grid-template-columns:62px minmax(0,1fr);gap:10px}
+  .cart-item>img{width:62px;height:62px}
+  .cart-item-main>b{font-size:11px}
+  .cart-total strong{font-size:18px}
+  .sound-toggle{font-size:9px}
+  .hero-actions{flex-wrap:wrap}
+}
+@media(hover:none){
+  .btn:hover,.nav-cta:hover,.product-button:hover,.cart-trigger:hover{transform:none}
+  .gmc-zoomable:hover{filter:none}
+}

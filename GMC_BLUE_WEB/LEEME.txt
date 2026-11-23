@@ -46,3 +46,20 @@ MEJORAS DE INTERACCIÓN AÑADIDAS
 - El cursor de escritorio utiliza la nueva flecha azul y verde proporcionada. En botones, enlaces y elementos interactivos se utiliza la nueva mano azul, blanca y verde proporcionada. Ambos cursores se optimizaron a 128 × 128 px para compatibilidad con navegadores.
 
 Los cursores personalizados se encuentran en la carpeta assets: cursor.png (flecha) y gmc_cursor_hand.png (mano).
+
+
+MEJORAS DE ESTA VERSION
+-----------------------
+- Carrito funcional: agregar, quitar, cambiar cantidades y conservar el contenido localmente.
+- Total referencial y envío del detalle del pedido por WhatsApp.
+- Visor de fotografías: clic en la imagen ampliada para cerrar, flechas, teclado y gestos táctiles.
+- Efecto de gota opcional; viene apagado y se activa desde el botón flotante.
+- Ajustes responsive adicionales para carrito, visor, botones y controles móviles.
+
+CONFIGURACION PENDIENTE
+-----------------------
+- El número de WhatsApp comercial de GMC BLUE no estaba confirmado en el proyecto.
+  En script.js, dentro de openWhatsApp(), reemplaza const phone = '' por el número
+  peruano completo (51 + número, sin + ni espacios). Mientras esté vacío, WhatsApp
+  abrirá el selector de contacto con el mensaje preparado.
+- Los precios del catálogo siguen siendo referencias que deben ser confirmadas por GMC BLUE.
