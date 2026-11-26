@@ -713,3 +713,31 @@ body.cart-open{overflow:hidden}
   .btn:hover,.nav-cta:hover,.product-button:hover,.cart-trigger:hover{transform:none}
   .gmc-zoomable:hover{filter:none}
 }
+
+
+/* =========================================================
+   GMC BLUE · ACCESO DE CLIENTES Y AUTENTICACIÓN SUPABASE
+   ========================================================= */
+.account-trigger{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 13px;border:1px solid rgba(57,196,232,.3);border-radius:999px;background:rgba(10,38,57,.85);color:#edf8fc;font:700 11px var(--font);transition:.25s ease;cursor:pointer;white-space:nowrap}
+.account-trigger i{color:var(--cyan);font-size:14px}.account-trigger:hover{border-color:var(--cyan);background:rgba(20,115,157,.28);transform:translateY(-2px)}
+.account-modal[hidden]{display:none}.account-modal{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:18px;background:rgba(0,7,13,.78);backdrop-filter:blur(8px);overflow-y:auto}
+.account-panel{position:relative;width:min(440px,100%);max-height:min(92dvh,760px);overflow-y:auto;padding:28px;background:#091c2a;border:1px solid rgba(57,196,232,.24);border-radius:18px;box-shadow:0 28px 90px rgba(0,0,0,.5);color:#f3f8fb}
+.account-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.account-eyebrow{font-size:9px;letter-spacing:1.7px;font-weight:800;color:var(--cyan)}.account-modal-head h2{font:800 27px var(--display);margin:7px 0 0}
+.account-close{width:38px;height:38px;flex:0 0 38px;border:1px solid rgba(255,255,255,.13);border-radius:50%;background:#102b3d;color:#fff;font-size:16px;cursor:pointer}
+.account-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;margin:23px 0 17px;border-radius:10px;background:#061522}.account-tabs button{min-height:39px;border:0;border-radius:7px;background:transparent;color:#9bb1bf;font:700 11px var(--font);cursor:pointer}.account-tabs button.is-active{background:#123c52;color:#eafaff;box-shadow:inset 0 0 0 1px rgba(57,196,232,.25)}
+.account-form{display:grid;gap:9px}.account-form[hidden],.account-summary[hidden]{display:none}.account-form label{margin-top:7px;color:#c6d8e2;font-size:10px;font-weight:700}.account-form input{width:100%;min-height:46px;padding:0 13px;border:1px solid rgba(160,190,207,.22);border-radius:8px;background:#061522;color:#f4f9fc;font:500 12px var(--font);outline:none}.account-form input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(57,196,232,.12)}.account-form input::placeholder{color:#71899a}.account-submit{width:100%;min-height:46px;justify-content:center;margin-top:12px;border:0;cursor:pointer}.account-submit:disabled{opacity:.65;cursor:wait}.account-privacy,.account-status{font-size:9px;line-height:1.6;color:#819baa;text-align:center}.account-privacy{margin:5px 0 0}.account-status{margin:16px 0 0}.auth-message{padding:11px 12px;margin:0 0 14px;border-radius:8px;background:rgba(57,196,232,.1);color:#c8f2ff;font-size:11px;line-height:1.55}.auth-message[data-type="error"]{background:rgba(240,100,100,.12);color:#ffb6b6}.auth-message[data-type="success"]{background:rgba(75,205,133,.12);color:#a9f0c5}
+.account-summary{text-align:center;padding:12px 0 4px}.account-avatar{width:58px;height:58px;display:grid;place-items:center;margin:0 auto 13px;border-radius:50%;background:#123c52;color:var(--cyan);font-size:22px}.account-summary h3{font:800 18px var(--display);margin:0 0 5px}.account-summary p{font-size:11px;color:#9eb4c2;overflow-wrap:anywhere}.account-role{display:inline-block;margin:7px 0 10px;padding:6px 11px;border-radius:30px;background:rgba(57,196,232,.12);color:#aeeeff;font-size:10px;font-weight:800}
+body.account-open{overflow:hidden}.account-close:focus-visible,.account-tabs button:focus-visible,.account-trigger:focus-visible,.account-form button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+@media(max-width:760px){.account-trigger{width:42px;height:42px;min-height:42px;padding:0}.account-trigger span{display:none}.account-panel{padding:23px 19px;border-radius:15px}.account-modal{padding:12px}}
+
+/* GMC BLUE · Historial de pedidos */
+.account-panel{width:min(520px,100%)}
+.account-orders{margin:22px 0 8px;text-align:left;border-top:1px solid rgba(255,255,255,.12);padding-top:17px}
+.account-orders h3{font:800 15px var(--display);margin:0 0 10px;color:#f3f8fb}
+.orders-loading{font-size:10px;color:#9eb4c2;margin:8px 0}
+.orders-list{display:grid;gap:9px;max-height:230px;overflow:auto}
+.order-card{padding:11px 12px;border:1px solid rgba(57,196,232,.17);border-radius:9px;background:#061522}
+.order-card-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:10px;color:#eafaff}
+.order-card-meta{font-size:9px;color:#9eb4c2;margin-top:6px;line-height:1.5}
+.order-status{font-size:9px;font-weight:800;color:#aeeeff;text-transform:uppercase}
+.order-items-summary{font-size:9px;color:#c6d8e2;margin-top:6px;line-height:1.5}

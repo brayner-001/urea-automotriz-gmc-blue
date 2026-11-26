@@ -63,3 +63,124 @@ CONFIGURACION PENDIENTE
   peruano completo (51 + número, sin + ni espacios). Mientras esté vacío, WhatsApp
   abrirá el selector de contacto con el mensaje preparado.
 - Los precios del catálogo siguen siendo referencias que deben ser confirmadas por GMC BLUE.
+
+------------------------------------------------------------
+NUEVA INTEGRACION: CUENTAS DE CLIENTES CON SUPABASE
+------------------------------------------------------------
+
+Se añadió un acceso "Mi cuenta" en el encabezado, con:
+- Registro con nombre, correo y contraseña.
+- Inicio y cierre de sesión.
+- Persistencia de sesión mediante Supabase Auth.
+- Consulta del rol propio (cliente/administrador) respetando RLS.
+- Mensajes de confirmación y error en español.
+
+Archivo nuevo: auth.js
+La librería @supabase/supabase-js se carga desde jsDelivr en index.html.
+
+Configuración necesaria en Supabase antes de probar el registro:
+1. En Authentication > URL Configuration, configura Site URL con el dominio
+   publicado de GMC BLUE en Cloudflare Pages.
+2. Añade también el dominio de pruebas local (por ejemplo, http://localhost:5500)
+   a Redirect URLs si vas a probar con un servidor local.
+3. Revisa si está activada la confirmación de correo. Si está activada, el cliente
+   deberá confirmar su correo antes de iniciar sesión.
+4. Mantén habilitada la seguridad RLS en las tablas públicas. La publishable key
+   está diseñada para el navegador; nunca coloques una secret key o service_role
+   en archivos frontend.
+
+Nota: el formulario inicial guarda el nombre en los metadatos de Supabase Auth.
+El trigger existente handle_new_user() crea el perfil y asigna el rol customer.
+El campo teléfono no se solicita todavía; lo integraremos después de decidir
+cómo guardar y validar ese dato en profiles.
+
+
+--------------------------------------------------------
+AVANCE LOCAL - FASE 1: PREPARACION DEL CATALOGO SUPABASE
+--------------------------------------------------------
+
+Se añadió catalog.js y se conectó después de auth.js.
+- Reutiliza el cliente Supabase ya inicializado por auth.js.
+- Ejecuta únicamente SELECT sobre public.products, filtrando active = true.
+- Lee id, name, sku, description, price, image_url y active.
+- Si la consulta funciona y devuelve productos válidos, actualiza las tarjetas
+  del catálogo y las opciones del cotizador.
+- Si Data API no expone la tabla, falla la conexión o no hay productos activos,
+  conserva las cuatro tarjetas locales y sus precios de prototipo (S/ 65, S/ 58,
+  S/ 529 y el IBC a cotizar).
+- Los textos del catálogo dinámico se insertan mediante APIs DOM/textContent,
+  no mediante HTML interpolado.
+- El clic de agregar al carrito usa delegación de eventos para seguir funcionando
+  después de actualizar las tarjetas.
+
+IMPORTANTE - DEPENDENCIA EXTERNA PENDIENTE:
+La última revisión documentada de Supabase indicaba 0 de 5 tablas expuestas en
+Data API. Por ello, este ZIP prepara la integración y el fallback seguro, pero
+no puede completar una lectura real de products hasta que exista una vía de
+acceso autorizada. No se modificaron tablas, datos, grants, exposición, RLS,
+funciones, triggers, usuarios ni configuración de Supabase.
+
+Para completar la conexión real se debe decidir y autorizar una de estas vías:
+1. Exponer únicamente public.products con grants mínimos revisados y RLS
+   conservada; o
+2. Crear una función backend/Edge Function de solo lectura que publique solo
+   los campos de productos activos, con secretos almacenados en el entorno
+   backend (nunca en JavaScript del navegador).
+
+No pulsar Save en Data API ni cambiar grants a ciegas: Supabase había advertido
+que guardar desde esa pantalla podía revocar grants personalizados.
+
+------------------------------------------------------------
+BACKEND DE CATÁLOGO GMC BLUE (PREPARACIÓN LOCAL - FASE 1)
+------------------------------------------------------------
+
+Se añadió una integración del catálogo con una Edge Function:
+- catalog.js consulta GET /functions/v1/catalog.
+- Si la función no está desplegada o falla, se conserva el catálogo de prototipo.
+- La función solo devuelve productos activos y un conjunto limitado de columnas.
+- La función utiliza una conexión de base de datos de solo lectura configurada como secreto del backend.
+- No se exponen tablas nuevas mediante Data API desde el navegador.
+
+Archivos nuevos:
+- supabase/functions/catalog/index.ts: endpoint de lectura del catálogo.
+- supabase/config.toml: configuración pública de invocación de la función.
+- supabase/auditoria_catalogo.sql: consultas SQL de solo lectura para revisar grants, RLS, columnas y roles.
+- supabase/README.md: arquitectura y pasos previos al despliegue.
+
+IMPORTANTE:
+La función está preparada localmente, pero NO está desplegada ni conectada a producción.
+Antes de desplegarla se debe ejecutar y revisar supabase/auditoria_catalogo.sql. Después se debe crear y aprobar un rol de base de datos dedicado con SELECT únicamente sobre las columnas públicas requeridas. La contraseña/cadena de conexión debe configurarse como secreto GMC_CATALOG_DATABASE_URL en Supabase, nunca en archivos frontend ni en GitHub.
+No se han modificado tablas, datos, roles, grants, políticas RLS ni configuración del proyecto Supabase.
+
+
+--- AVANCE PROTOTIPO · CATÁLOGO DIRECTO ---
+
+Para el primer prototipo se simplificó la arquitectura: el frontend consulta directamente la tabla public.products mediante la Data API de Supabase usando únicamente la clave publishable. La tabla mantiene RLS y el acceso público requerido es solo SELECT.
+
+Archivo para cargar el catálogo inicial: supabase/prototipo_catalogo.sql
+
+No se requiere desplegar la Edge Function de catálogo para esta primera versión. Se conserva en el proyecto para una futura evolución si se necesita un backend dedicado.
+
+
+ACTUALIZACIÓN FASE 2 — PEDIDOS
+- Se añadió supabase/gmc_create_order.sql. Ejecutar una sola vez en Supabase SQL Editor para habilitar el registro de pedidos autenticados.
+- El backend SQL calcula los precios desde products y crea orders + order_items en una transacción.
+- Los clientes autenticados registran pedido y luego pueden continuar por WhatsApp con el código del pedido.
+- Mi cuenta muestra los últimos 20 pedidos del usuario.
+- Los visitantes conservan el flujo WhatsApp existente; no se guarda pedido sin sesión.
+- No ejecutar este SQL automáticamente: revisar y ejecutar manualmente en el proyecto Supabase existente.
+
+
+CORRECCIÓN FASE 2.1 — IDENTIFICADORES DEL CATÁLOGO
+- El carrito conserva los artículos guardados anteriormente en gmcBlueCartV1.
+- Al cargar products desde Supabase, se reconcilian los artículos existentes por nombre normalizado y se completa productId.
+- Los nuevos artículos toman el UUID real de products desde el catálogo cargado.
+- Después de reemplazar la carpeta, recarga con Ctrl+F5. Si el carrito conserva artículos antiguos, espera a que el catálogo termine de cargar; los UUID se completan automáticamente.
+- Si algún nombre de producto fue cambiado en Supabase y no coincide con el del carrito, elimina solo ese artículo y agrégalo nuevamente desde el catálogo actualizado.
+
+
+MANTENIMIENTO FASE 2.3 — CATÁLOGO Y SESIÓN ÚNICOS
+- catalog.js ahora reutiliza window.gmcSupabaseClient creado por auth.js; ya no crea un segundo cliente con persistSession=false.
+- El registro de pedidos para usuarios autenticados se bloquea si el catálogo no confirmó la sincronización real con Supabase. Esto evita registrar productos del HTML local como si fueran registros válidos.
+- Se conserva el flujo de WhatsApp para visitantes sin sesión.
+- No se modifican tablas, datos, políticas RLS ni la función SQL. No ejecutar SQL adicional por esta corrección.

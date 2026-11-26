@@ -40,16 +40,20 @@ document.getElementById('sendQuote')?.addEventListener('click', () => {
   const total = price > 0 ? 'S/ ' + (price * qty).toFixed(2) : 'A cotizar';
   openWhatsApp(`Hola, GMC BLUE. Deseo solicitar una cotización.\\n\\nPresentación: ${name}\\nCantidad: ${qty}\\nEstimado referencial: ${total}\\n\\nPor favor, confirmen precio, disponibilidad y condiciones de entrega.`);
 });
-document.querySelectorAll('.add-quote').forEach(button => {
-  button.addEventListener('click', () => {
-    addProductToCart({
-      name: button.dataset.product,
-      price: Number(button.dataset.price) || 0,
-      image: button.closest('.product-card')?.querySelector('img')?.getAttribute('src') || '',
-      unit: 'unidad'
-    });
-    openCart();
+// Delegación de eventos: también funciona cuando el catálogo se renderiza desde Supabase.
+document.querySelector('#productos .product-grid')?.addEventListener('click', event => {
+  const button = event.target.closest('.add-quote');
+  if (!button) return;
+  const productName = button.dataset.product || 'Producto GMC BLUE';
+  const catalogMatch = findCatalogProduct({ name: productName });
+  addProductToCart({
+    name: catalogMatch?.name || productName,
+    price: catalogMatch ? Number(catalogMatch.price) : Math.max(0, Number(button.dataset.price) || 0),
+    image: catalogMatch?.image_url || button.dataset.image || button.closest('.product-card')?.querySelector('img')?.getAttribute('src') || '',
+    productId: button.dataset.productId || catalogMatch?.id || null,
+    unit: 'unidad'
   });
+  openCart();
 });
 const contactMessage = 'Hola, GMC BLUE. Quisiera recibir información sobre sus presentaciones de urea automotriz y condiciones de cotización.';
 ['contactWhatsapp','floatingWhatsapp'].forEach(id => document.getElementById(id)?.addEventListener('click', e => {
@@ -237,12 +241,42 @@ const GMC_PRODUCTS = [
   { name: 'Bidón automotriz 20 L', price: 65, image: 'assets/bidon_gmc.jpg' },
   { name: 'Caja de urea 20 L', price: 58, image: 'assets/caja_gmc.jpg' },
   { name: 'Cilindro industrial 208 L', price: 529, image: 'assets/cilindro_gmc.jpg' },
-  { name: 'Contenedor IBC 1,000 L', price: 0, image: 'assets/ibc_gmc.jpg' }
+  { name: 'Contenedor IBC 1,000 L', price: 1600, image: 'assets/ibc_gmc.jpg', productId: 'f9e57a6c-ce47-4f7d-ac3f-4fd8e656e8eb' }
 ];
-const CART_STORAGE_KEY = 'gmcBlueCartV1';
+const CART_STORAGE_KEY = 'gmcBlueCartV2';
+const normalizeProductName = value => String(value || '')
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+let gmcCatalogProducts = Array.isArray(window.gmcCatalogProducts) ? window.gmcCatalogProducts : [];
+function findCatalogProduct(item) {
+  const key = normalizeProductName(item?.name);
+  return gmcCatalogProducts.find(product =>
+    normalizeProductName(product.name) === key
+  ) || null;
+}
+function hydrateCartProductIds() {
+  let changed = false;
+  gmcCart.forEach(item => {
+    const match = findCatalogProduct(item);
+    if (match?.id && item.productId !== match.id) {
+      item.productId = match.id;
+      changed = true;
+    }
+    if (match) {
+      item.name = match.name;
+      item.price = Number(match.price);
+      item.image = match.image_url || item.image;
+    }
+  });
+  if (changed) saveCart();
+  renderCart();
+}
 let gmcCart = [];
 try {
-  const stored = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+  const previous = localStorage.getItem(CART_STORAGE_KEY)
+    ?? localStorage.getItem('gmcBlueCartV1')
+    ?? '[]';
+  const stored = JSON.parse(previous);
   if (Array.isArray(stored)) gmcCart = stored.filter(item =>
     item && typeof item.name === 'string' && Number.isFinite(Number(item.price)) &&
     Number.isFinite(Number(item.qty)) && Number(item.qty) > 0
@@ -260,9 +294,13 @@ function saveCart() {
   try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(gmcCart)); } catch (_) {}
 }
 function addProductToCart(product) {
-  const existing = gmcCart.find(item => item.name === product.name);
-  if (existing) existing.qty += 1;
-  else gmcCart.push({ ...product, qty: 1 });
+  const existing = gmcCart.find(item => normalizeProductName(item.name) === normalizeProductName(product.name));
+  if (existing) {
+    existing.qty += 1;
+    if (product.productId) existing.productId = product.productId;
+    if (product.price !== undefined) existing.price = product.price;
+    if (product.image) existing.image = product.image;
+  } else gmcCart.push({ ...product, qty: 1 });
   saveCart();
   renderCart();
 }
@@ -338,21 +376,118 @@ document.getElementById('cartClear')?.addEventListener('click', () => {
   saveCart();
   renderCart();
 });
-document.getElementById('cartCheckout')?.addEventListener('click', () => {
-  if (!gmcCart.length) {
-    openCart();
+document.getElementById('cartCheckout')?.addEventListener('click', async event => {
+  const button = event.currentTarget;
+  if (!gmcCart.length) { openCart(); return; }
+  const client = window.gmcSupabaseClient;
+  const { data: sessionData } = client ? await client.auth.getSession() : { data: { session: null } };
+  const user = sessionData?.session?.user;
+  if (!user) {
+    const lines = gmcCart.map(item => {
+      const lineTotal = item.price > 0 ? money(item.price * item.qty) : 'A cotizar';
+      return `• ${item.name} | Cantidad: ${item.qty} | ${lineTotal}`;
+    });
+    const total = gmcCart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const hasQuote = gmcCart.some(item => item.price <= 0);
+    const messageBase = `Hola, GMC BLUE. Deseo solicitar este pedido:\n\n${lines.join('\n')}\n\nSubtotal referencial: ${money(total)}${hasQuote ? '\nHay productos pendientes de cotización.' : ''}\n\nPor favor, confirmen disponibilidad, precio final y condiciones de entrega.`;
+    openWhatsApp(messageBase);
     return;
   }
-  const lines = gmcCart.map(item => {
-    const lineTotal = item.price > 0 ? money(item.price * item.qty) : 'A cotizar';
-    return `• ${item.name} | Cantidad: ${item.qty} | ${lineTotal}`;
-  });
-  const total = gmcCart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const hasQuote = gmcCart.some(item => item.price <= 0);
-  const message = `Hola, GMC BLUE. Deseo solicitar este pedido:\n\n${lines.join('\n')}\n\nSubtotal referencial: ${money(total)}${hasQuote ? '\nHay productos pendientes de cotización.' : ''}\n\nPor favor, confirmen disponibilidad, precio final y condiciones de entrega.`;
-  openWhatsApp(message);
+
+  // Un usuario autenticado solo puede registrar productos sincronizados con
+  // Supabase. Evita crear pedidos con tarjetas locales o datos desactualizados.
+  if (window.gmcCatalogSyncStatus !== 'ready') {
+    const reason = window.gmcCatalogSyncError || 'El catálogo todavía no ha confirmado sus productos activos.';
+    alert(`No se puede registrar el pedido porque el catálogo no está sincronizado con Supabase. ${reason} Recarga la página y vuelve a intentarlo.`);
+    return;
+  }
+
+  // Resolver UUIDs faltantes directamente desde Supabase antes de crear el pedido.
+  // Esto también repara carritos antiguos guardados en localStorage.
+  const normalizeNameForLookup = value => String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+  const originalText = button.innerHTML;
+  button.disabled = true;
+  button.textContent = 'Registrando pedido…';
+  try {
+    const { data: activeProducts, error: productsError } = await client
+      .from('products')
+      .select('id,name,price,active')
+      .eq('active', true);
+
+    if (productsError) throw new Error(`No se pudo verificar el catálogo en Supabase: ${productsError.message}`);
+
+    const productsByName = new Map(
+      (activeProducts || []).map(product => [normalizeNameForLookup(product.name), product])
+    );
+
+    const items = [];
+    for (const item of gmcCart) {
+      let product = item.productId
+        ? (activeProducts || []).find(candidate => candidate.id === item.productId)
+        : null;
+
+      if (!product) {
+        product = productsByName.get(normalizeNameForLookup(item.name));
+      }
+
+      if (!product?.id) {
+        throw new Error(`No se encontró "${item.name}" como producto activo en Supabase. Elimina ese artículo del carrito y agrégalo nuevamente desde el catálogo actualizado.`);
+      }
+
+      // Reconciliar el carrito con el UUID y precio actuales de la base de datos.
+      item.productId = product.id;
+      item.name = product.name;
+      item.price = Number(product.price);
+      items.push({ product_id: product.id, quantity: item.qty });
+    }
+    saveCart();
+    renderCart();
+
+    // Construir el resumen después de reconciliar los datos con Supabase,
+    // para que el mensaje y el total no conserven precios antiguos del carrito.
+    const lines = gmcCart.map(item => {
+      const lineTotal = item.price > 0 ? money(item.price * item.qty) : 'A cotizar';
+      return `• ${item.name} | Cantidad: ${item.qty} | ${lineTotal}`;
+    });
+    const total = gmcCart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const hasQuote = gmcCart.some(item => item.price <= 0);
+    const messageBase = `Hola, GMC BLUE. Deseo solicitar este pedido:\n\n${lines.join('\n')}\n\nSubtotal referencial: ${money(total)}${hasQuote ? '\nHay productos pendientes de cotización.' : ''}\n\nPor favor, confirmen disponibilidad, precio final y condiciones de entrega.`;
+
+    const { data: orderId, error } = await client.rpc('gmc_create_order', {
+      p_items: items,
+      p_notes: hasQuote ? 'Incluye producto(s) a cotizar. Confirmar precio final y disponibilidad por WhatsApp.' : 'Solicitud de cotización desde la web GMC BLUE.'
+    });
+    if (error) {
+      if (error.code === '22023' && /producto.*disponible/i.test(error.message || '')) {
+        const submitted = items.map(item => `${item.product_id} (cantidad ${item.quantity})`).join(', ');
+        throw new Error(`La función de pedidos no encuentra como activo uno de estos UUID: ${submitted}. Verifica que la función y la tabla products estén en el mismo proyecto de Supabase. Detalle original: ${error.message}`);
+      }
+      throw error;
+    }
+    if (!orderId) throw new Error('Supabase no devolvió el identificador del pedido.');
+    const orderMessage = `${messageBase}\n\nCódigo de pedido GMC BLUE: ${orderId}`;
+    openWhatsApp(orderMessage);
+    button.textContent = 'Pedido registrado ✓';
+    // El carrito se conserva hasta que el cliente decida vaciarlo.
+  } catch (error) {
+    console.error('GMC BLUE: no se pudo registrar el pedido.', error);
+    alert(`No se pudo registrar el pedido: ${error.message || 'Error de conexión'}. Tu carrito se conserva. Puedes volver a intentarlo.`);
+    button.innerHTML = originalText;
+  } finally {
+    button.disabled = false;
+  }
 });
 renderCart();
+window.addEventListener('gmc:catalog-loaded', event => {
+  gmcCatalogProducts = Array.isArray(event.detail?.products) ? event.detail.products : [];
+  hydrateCartProductIds();
+});
 
 /* =========================================================
    GMC BLUE · SONIDO DE INTERACCIÓN

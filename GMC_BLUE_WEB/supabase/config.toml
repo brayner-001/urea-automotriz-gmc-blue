@@ -1,0 +1,4 @@
+[functions.catalog]
+# Endpointo público de lectura: solo devuelve columnas seleccionadas de productos activos.
+# La función aplica CORS y usa una credencial de base de datos restringida en servidor.
+verify_jwt = false

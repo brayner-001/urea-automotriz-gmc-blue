@@ -18,7 +18,7 @@
 
   <header class="site-header">
     <a class="brand" href="#inicio" aria-label="GMC BLUE inicio"><img src="assets/logo_gmc.jpg" alt="Logotipo GMC BLUE"></a>
-    <div class="header-tools"><button class="cart-trigger" id="cartToggle" type="button" aria-label="Abrir carrito"><i class="fa-solid fa-cart-shopping"></i><span>Carrito</span><b id="cartCount" aria-live="polite">0</b></button><button class="menu-toggle" id="menuToggle" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button></div>
+    <div class="header-tools"><button class="account-trigger" id="accountToggle" type="button" aria-label="Iniciar sesión o registrarse"><i class="fa-regular fa-user"></i><span data-account-label>Mi cuenta</span></button><button class="cart-trigger" id="cartToggle" type="button" aria-label="Abrir carrito"><i class="fa-solid fa-cart-shopping"></i><span>Carrito</span><b id="cartCount" aria-live="polite">0</b></button><button class="menu-toggle" id="menuToggle" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button></div>
     <nav class="main-nav" id="mainNav">
       <a href="#inicio">Inicio</a><a href="#empresa">Nosotros</a><a href="#productos">Productos</a><a href="#aplicaciones">Aplicaciones</a><a href="#logistica">Logística</a><a href="#conocimiento">Videos</a><a href="#contacto">Contacto</a>
       <a class="nav-cta" href="#cotizador">Solicitar cotización <i class="fa-solid fa-arrow-right"></i></a>
@@ -92,7 +92,7 @@
         </article>
         <article class="product-card">
           <div class="product-image"><span class="product-label">1,000 LITROS</span><img src="assets/ibc_gmc.jpg" alt="Contenedor IBC de urea automotriz GMC BLUE"></div>
-          <div class="product-info"><div class="product-type">ALTO VOLUMEN</div><h3>Contenedor IBC</h3><p>Formato de gran capacidad para flotas y puntos de abastecimiento.</p><div class="price-row"><div><small>Precio</small><strong>A cotizar</strong></div><span class="price-unit">por volumen</span></div><button class="product-button add-quote" data-product="Contenedor IBC 1,000 L" data-price="0">Solicitar cotización <i class="fa-solid fa-arrow-right"></i></button></div>
+          <div class="product-info"><div class="product-type">ALTO VOLUMEN</div><h3>Contenedor IBC</h3><p>Formato de gran capacidad para flotas y puntos de abastecimiento.</p><div class="price-row"><div><small>Precio referencial</small><strong>S/ 1,600.00</strong></div><span class="price-unit">por unidad</span></div><button class="product-button add-quote" data-product="Contenedor IBC 1,000 L" data-price="1600" data-product-id="f9e57a6c-ce47-4f7d-ac3f-4fd8e656e8eb">Agregar a cotización <i class="fa-solid fa-plus"></i></button></div>
         </article>
       </div>
       <p class="price-disclaimer"><i class="fa-solid fa-circle-info"></i> Precios referenciales consultados en oferta pública peruana; pueden variar por proveedor, volumen, IGV, envase y despacho. Confirma el precio final con GMC BLUE antes de publicar o comprar.</p>
@@ -265,7 +265,7 @@
           <option value="65" data-name="Bidón automotriz 20 L">Bidón automotriz · 20 L</option>
           <option value="58" data-name="Caja de urea 20 L">Caja de urea · 20 L</option>
           <option value="529" data-name="Cilindro industrial 208 L">Cilindro industrial · 208 L</option>
-          <option value="0" data-name="Contenedor IBC 1,000 L">Contenedor IBC · 1,000 L (cotizar)</option>
+          <option value="1600" data-name="Contenedor IBC 1,000 L">Contenedor IBC · 1,000 L</option>
         </select>
         <label for="quantity">Cantidad de unidades</label>
         <div class="quantity-control"><button type="button" id="minusQty" aria-label="Disminuir">−</button><input type="number" id="quantity" min="1" max="9999" value="1"><button type="button" id="plusQty" aria-label="Aumentar">+</button></div>
@@ -298,6 +298,54 @@
   </aside>
   <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="false" aria-label="Activar sonidos"><i class="fa-solid fa-volume-xmark"></i><span>Sonido apagado</span></button>
   <a class="floating-whatsapp" id="floatingWhatsapp" href="#" aria-label="Contactar por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+
+  <section class="account-modal" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle" hidden>
+    <div class="account-panel">
+      <div class="account-modal-head">
+        <div><span class="account-eyebrow">GMC BLUE · ÁREA DE CLIENTES</span><h2 id="accountModalTitle">Mi cuenta</h2></div>
+        <button class="account-close" id="accountClose" type="button" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="account-tabs" role="tablist" aria-label="Acceso a la cuenta">
+        <button type="button" class="is-active" data-auth-view="login" role="tab" aria-selected="true">Iniciar sesión</button>
+        <button type="button" data-auth-view="signup" role="tab" aria-selected="false">Crear cuenta</button>
+      </div>
+      <p class="auth-message" id="authMessage" role="status" aria-live="polite" hidden></p>
+      <div class="account-summary" id="accountSummary" hidden>
+        <div class="account-avatar"><i class="fa-solid fa-user"></i></div>
+        <h3 id="accountName">Cliente GMC BLUE</h3>
+        <p id="accountEmail"></p>
+        <span class="account-role" id="accountRole">Cliente</span>
+        <section class="account-orders" id="accountOrders" aria-labelledby="accountOrdersTitle">
+          <h3 id="accountOrdersTitle">Mis pedidos</h3>
+          <p class="orders-loading" id="ordersMessage">Cargando historial…</p>
+          <div id="ordersList" class="orders-list"></div>
+        </section>
+        <button class="btn btn-primary account-submit" id="logoutButton" type="button">Cerrar sesión</button>
+      </div>
+      <form class="account-form" id="loginForm">
+        <label for="loginEmail">Correo electrónico</label>
+        <input id="loginEmail" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
+        <label for="loginPassword">Contraseña</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Tu contraseña" minlength="8" required>
+        <button class="btn btn-primary account-submit" type="submit">Iniciar sesión <i class="fa-solid fa-arrow-right"></i></button>
+      </form>
+      <form class="account-form" id="signupForm" hidden>
+        <label for="signupName">Nombre completo</label>
+        <input id="signupName" type="text" autocomplete="name" maxlength="120" placeholder="Tu nombre completo" required>
+        <label for="signupEmail">Correo electrónico</label>
+        <input id="signupEmail" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
+        <label for="signupPassword">Crear contraseña</label>
+        <input id="signupPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo 8 caracteres" required>
+        <button class="btn btn-primary account-submit" type="submit">Crear cuenta <i class="fa-solid fa-arrow-right"></i></button>
+        <p class="account-privacy">Al crear una cuenta, tus datos de acceso se gestionan mediante Supabase Auth.</p>
+      </form>
+      <p class="account-status" id="supabaseStatus">Preparando servicio de autenticación…</p>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
+  <script src="auth.js"></script>
+  <script src="catalog.js"></script>
 </body>
 </html>
